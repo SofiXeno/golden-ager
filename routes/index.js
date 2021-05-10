@@ -5,7 +5,7 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   // res.statusCode = 200;
   // res.setHeader('Content-Type', 'text/plain');
-  res.end('Успішне приєднання до серверу\n');
+  res.end('Hello World\n');
 });
 
 module.exports = router;
