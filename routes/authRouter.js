@@ -51,8 +51,7 @@ async function registration(req, res) {
             first_name,
             last_name,
             birthday,
-            organization,
-            is_free
+            organization
         } = req.body
 
         const candidate = await User.findOne({phone})
@@ -70,8 +69,8 @@ async function registration(req, res) {
             first_name,
             last_name,
             birthday,
-            organization,
-            is_free
+            organization
+
         })
         await user.save()
         return res.json({message: "Користувач був успішно зареєстрований"})
