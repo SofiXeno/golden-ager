@@ -59,7 +59,7 @@ router.post("/login", [
 
     login)
 
-router.get("/users", middleWare.authMiddleWare, middleWare.roleMiddleWare(true), getUsers)
+router.get("/users", middleWare.authMiddleWare, middleWare.checkVolunteer, getUsers)
 
 module.exports = router
 
