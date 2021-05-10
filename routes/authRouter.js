@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
 
-
 router.get("/registration", registration)
 router.get("/login", login)
 router.get("/users", getUsers)
@@ -14,16 +13,32 @@ module.exports = router
 
 async function registration(req, res) {
     try {
-        const {phone, password} = req.body
+        const {
+            is_volunteer,
+            phone,
+            password,
+            first_name,
+            last_name,
+            birthday,
+            organization
+        } = req.body
+
         const candidate = await User.findOne({phone})
-        if (candidate){
+        if (candidate) {
             return res.status(400).json({message: "Користувач з таким номером телефону уже існує"})
         }
 
         const salt = bcrypt.genSaltSync(saltRounds);
         const hashPassword = bcrypt.hashSync(password, salt);
 
-        const user = new User({phone, password: hashPassword})
+        const user = new User({
+            is_volunteer,
+            phone,
+            password: hashPassword, first_name,
+            last_name,
+            birthday,
+            organization
+        })
         await user.save()
         return res.json({message: "Користувач був успішно зареєстрований"})
 
