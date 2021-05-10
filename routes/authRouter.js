@@ -1,12 +1,43 @@
 const User = require('../models/user')
 const router = require('express').Router()
+const {check} = require("express-validator")
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
 
-router.get("/registration", registration)
-router.get("/login", login)
-router.get("/users", getUsers)
+router.post("/registration", [
+        check('phone')
+            .isMobilePhone("uk-UA")
+            .notEmpty()
+            .withMessage("Телефон має бути заданим у форматі 380XXXXXXXXX"),
+
+        check('password')
+            .isLength({ min: 6 })
+            .notEmpty()
+            .withMessage("Пароль має бути більше 6 символів"),
+
+        check('first_name')
+            .notEmpty()
+            .withMessage("Ім'я не може бути пустим"),
+
+        check('last_name')
+            .notEmpty()
+            .withMessage("Прізвище не може бути пустим"),
+
+        check('birthday')
+            .notEmpty()
+            .isDate({format: 'DD-MM-YYYY'})
+            .withMessage("Дата повинна бути заданою в форматі ДД-ММ-РРРР"),
+
+        check('organization')
+            .notEmpty()
+            .withMessage("Назва організації не може бути пустою")
+
+    ],
+
+    registration)
+router.post("/login", login)
+router.post("/users", getUsers)
 
 module.exports = router
 
@@ -35,7 +66,8 @@ async function registration(req, res) {
         const user = new User({
             is_volunteer,
             phone,
-            password: hashPassword, first_name,
+            password: hashPassword,
+            first_name,
             last_name,
             birthday,
             organization,
