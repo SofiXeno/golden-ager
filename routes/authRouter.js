@@ -9,6 +9,8 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
+const middleWare = require("../middleWares")
+
 
 router.post("/registration", [
         check('phone')
@@ -19,7 +21,7 @@ router.post("/registration", [
 
         check('password')
             .isLength({min: 6})
-            .withMessage("Пароль має бути більше 6 символів\"")
+            .withMessage("Пароль має бути більше 6 символів")
             .notEmpty()
             .withMessage("Пароль не може бути пустим"),
 
@@ -35,7 +37,7 @@ router.post("/registration", [
             .notEmpty()
             .withMessage("Дата народження не може бути пустою")
             .isDate({format: 'YYYY-MM-DD'})
-            .withMessage("Дата повинна бути заданою в форматі РРРР-ДД-ММ")
+            .withMessage("Дата повинна бути заданою в форматі РРРР-MM-ДД")
 
     ],
 
@@ -57,7 +59,7 @@ router.post("/login", [
 
     login)
 
-router.get("/users", roleMiddleWare(true), getUsers)
+router.get("/users", middleWare.authMiddleWare, middleWare.roleMiddleWare(true), getUsers)
 
 module.exports = router
 
@@ -167,60 +169,7 @@ async function getUsers(req, res) {
     }
 }
 
-function authMiddleWare(req, res, next) {
-    if (req.method === "OPTIONS") {
-        next()
-    }
 
-    try {
-        const token = req.headers.authorization.split(' ')[1]
-        if (!token) {
-            return res.status(403).json({message: "Користувач не авторизований"})
-        }
-
-        const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
-        req.user = decodedToken
-        next()
-
-
-    } catch (e) {
-        console.log(e)
-        return res.status(403).json({message: "Користувач не авторизований"})
-    }
-
-}
-
-function roleMiddleWare(is_volunteer) {
-    return function (req, res, next) {
-        if (req.method === "OPTIONS") {
-            next()
-        }
-
-        try {
-            const token = req.headers.authorization.split(' ')[1]
-            if (!token) {
-                return res.status(403).json({message: "Користувач не авторизований"})
-            }
-
-            const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
-            req.user = decodedToken
-            console.log("decoded token:",decodedToken)
-
-            if (is_volunteer !== req.user.is_volunteer) {
-                return res.status(403).json({message: "У вас немає доступу"})
-            }
-
-            next()
-
-
-        } catch (e) {
-            console.log(e)
-            return res.status(403).json({message: "Користувач не авторизований"})
-        }
-    }
-
-
-}
 
 
 
