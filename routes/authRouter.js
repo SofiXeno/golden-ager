@@ -1,20 +1,27 @@
 const User = require('../models/user')
 const router = require('express').Router()
+
 const {check} = require("express-validator")
+const {validationResult} = require("express-validator")
+
+const jwt = require('jsonwebtoken')
+
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
 
 router.post("/registration", [
         check('phone')
-            .isMobilePhone("uk-UA")
+            .matches('^380[5-9][0-9]\\d{7}$', 'm')
+            .withMessage("Телефон має бути заданим у форматі 380XXXXXXXXX")
             .notEmpty()
-            .withMessage("Телефон має бути заданим у форматі 380XXXXXXXXX"),
+            .withMessage("Телефон не може бути пустим"),
 
         check('password')
-            .isLength({ min: 6 })
+            .isLength({min: 6})
+            .withMessage("Пароль має бути більше 6 символів\"")
             .notEmpty()
-            .withMessage("Пароль має бути більше 6 символів"),
+            .withMessage("Пароль не може бути пустим"),
 
         check('first_name')
             .notEmpty()
@@ -26,24 +33,42 @@ router.post("/registration", [
 
         check('birthday')
             .notEmpty()
-            .isDate({format: 'DD-MM-YYYY'})
-            .withMessage("Дата повинна бути заданою в форматі ДД-ММ-РРРР"),
-
-        check('organization')
-            .notEmpty()
-            .withMessage("Назва організації не може бути пустою")
+            .withMessage("Дата народження не може бути пустою")
+            .isDate({format: 'YYYY-MM-DD'})
+            .withMessage("Дата повинна бути заданою в форматі РРРР-ДД-ММ")
 
     ],
 
     registration)
-router.post("/login", login)
-router.post("/users", getUsers)
+router.post("/login", [
+        check('phone')
+            .matches('^380[5-9][0-9]\\d{7}$', 'm')
+            .withMessage("Телефон має бути заданим у форматі 380XXXXXXXXX")
+            .notEmpty()
+            .withMessage("Телефон не може бути пустим"),
+
+        check('password')
+            .isLength({min: 6})
+            .withMessage("Пароль має бути більше 6 символів\"")
+            .notEmpty()
+            .withMessage("Пароль не може бути пустим"),
+    ],
+
+
+    login)
+
+router.get("/users", roleMiddleWare(true), getUsers)
 
 module.exports = router
 
 
 async function registration(req, res) {
     try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            return res.status(400).json({message: "Помилка при реєcтрації", errors})
+        }
+
         const {
             is_volunteer,
             phone,
@@ -72,6 +97,17 @@ async function registration(req, res) {
             organization
 
         })
+
+        if (user.is_volunteer) {
+            user.is_free = true
+            if (!user.organization) {
+                return res.status(400).json({message: `Волонтер ${user.first_name} ${user.last_name} не належить до жодної організації`})
+            }
+        } else {
+            user.is_free = null
+            user.organization = null
+        }
+
         await user.save()
         return res.json({message: "Користувач був успішно зареєстрований"})
 
@@ -84,7 +120,25 @@ async function registration(req, res) {
 
 
 async function login(req, res) {
+
     try {
+
+        const {
+            phone,
+            password,
+        } = req.body
+
+        const user = await User.findOne({phone})
+        if (!user) {
+            return res.status(400).json({message: `Користувача з номером телефону ${phone} не знайдено`})
+        }
+
+        const validPassword = bcrypt.compareSync(password, user.password)
+        if (!validPassword) {
+            return res.status(400).json({message: `Невірний пароль`})
+        }
+        const token = generateAccessToken(user._id, user.is_volunteer)
+        return res.json({token})
 
     } catch (e) {
         console.log(e)
@@ -93,14 +147,81 @@ async function login(req, res) {
 }
 
 
+const generateAccessToken = (id, is_volunteer) => {
+    const payload = {
+        id,
+        is_volunteer
+    }
+
+    return jwt.sign(payload, process.env.SECRET_KEY, {expiresIn: "24h"});
+}
+
+
 async function getUsers(req, res) {
     try {
-        res.json('server works')
+        const users = await User.find()
+        res.json(users)
 
     } catch (e) {
-
+        console.log(e)
     }
 }
+
+function authMiddleWare(req, res, next) {
+    if (req.method === "OPTIONS") {
+        next()
+    }
+
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        if (!token) {
+            return res.status(403).json({message: "Користувач не авторизований"})
+        }
+
+        const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
+        req.user = decodedToken
+        next()
+
+
+    } catch (e) {
+        console.log(e)
+        return res.status(403).json({message: "Користувач не авторизований"})
+    }
+
+}
+
+function roleMiddleWare(is_volunteer) {
+    return function (req, res, next) {
+        if (req.method === "OPTIONS") {
+            next()
+        }
+
+        try {
+            const token = req.headers.authorization.split(' ')[1]
+            if (!token) {
+                return res.status(403).json({message: "Користувач не авторизований"})
+            }
+
+            const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
+            req.user = decodedToken
+            console.log("decoded token:",decodedToken)
+
+            if (is_volunteer !== req.user.is_volunteer) {
+                return res.status(403).json({message: "У вас немає доступу"})
+            }
+
+            next()
+
+
+        } catch (e) {
+            console.log(e)
+            return res.status(403).json({message: "Користувач не авторизований"})
+        }
+    }
+
+
+}
+
 
 
 

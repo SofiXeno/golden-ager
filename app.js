@@ -62,17 +62,17 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-const doc = {
-  is_volunteer: false,
-  phone: '0987654321',
-  password: 'a',
-  first_name: 'Віктор',
-  last_name: 'Іванов',
-  birthday: new Date(1950, 11, 17),
-  organization: "Життєлюб"
-}
-
-const user = new User(doc)
-user.save().then(console.log).catch(console.log)
+// const doc = {
+//   is_volunteer: false,
+//   phone: '0987654321',
+//   password: 'a',
+//   first_name: 'Віктор',
+//   last_name: 'Іванов',
+//   birthday: new Date(1950, 11, 17),
+//   organization: "Життєлюб"
+// }
+//
+// const user = new User(doc)
+// user.save().then(console.log).catch(console.log)
 
 module.exports = app;
