@@ -63,12 +63,12 @@ app.use(function(err, req, res, next) {
 });
 
 const doc = {
-  is_volunteer: true,
-  phone: '565456',
+  is_volunteer: false,
+  phone: '0987654321',
   password: 'a',
-  first_name: 'vasya',
-  last_name: 'poopkin',
-  birthday: new Date(),
+  first_name: 'Віктор',
+  last_name: 'Іванов',
+  birthday: new Date(1950, 11, 17),
   organization: "Життєлюб"
 }
 

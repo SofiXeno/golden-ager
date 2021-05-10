@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
 
-    is_volunteer: {type: Boolean, required: true},
+    is_volunteer: {type: Boolean, required: true, default: true},
     phone: {type: String, required: true, unique: true},
     password: {type: String, required: true},
     first_name: {type: String, required: true},
