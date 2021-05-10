@@ -3,8 +3,8 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
+  // res.statusCode = 200;
+  // res.setHeader('Content-Type', 'text/plain');
   res.end('Hello World\n');
 });
 

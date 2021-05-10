@@ -1,3 +1,5 @@
+const User = require('./models/user')
+
 require('dotenv').config();
 
 const createError = require('http-errors');
@@ -5,8 +7,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
-
 
 
 const mongoose = require('mongoose');
@@ -19,10 +19,12 @@ mongoose.connect(process.env.DB_URL,{
 
 
 const indexRouter = require('./routes/index');
+const authRouter = require('./routes/authRouter');
 
 // const userRouter = require('./routes/user');
 // const categoryRouter = require('./routes/category');
 // const taskRouter = require('./routes/task');
+
 
 
 const app = express();
@@ -38,7 +40,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-// app.use('/users', userRouter);
+app.use('/auth', authRouter);
+
+// app.use('/users', useruter);
 // app.use('/task', taskRouter);
 // app.use('/category', categoryRouter);
 
@@ -57,5 +61,18 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+const doc = {
+  is_volunteer: true,
+  phone: '565456',
+  password: 'a',
+  first_name: 'vasya',
+  last_name: 'poopkin',
+  birthday: new Date(),
+  organization: "Життєлюб"
+}
+
+const user = new User(doc)
+user.save().then(console.log).catch(console.log)
 
 module.exports = app;
