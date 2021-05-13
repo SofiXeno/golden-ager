@@ -1,11 +1,13 @@
+
 const mongoose = require('mongoose');
+const ObjectId = require('bson');
 
 const taskTemplatesSchema = new mongoose.Schema({
 
     title: {type: String, required: true},
     description: {type: String, required: true},
-    category_id: {type: ObjectId, required: true, default: "60983edb7cb3785fc858cc91"},
-    time: {type: Timestamp, required: true},
+    category_id: {type: mongoose.Schema.Types.ObjectID, required: true, default: "60983edb7cb3785fc858cc91"},
+    time: {type: String, required: true},
 
 });
 
