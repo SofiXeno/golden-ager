@@ -22,10 +22,9 @@ const indexRouter = require('./routes/index');
 const authRouter = require('./routes/authRouter');
 
 
-// const userRouter = require('./routes/user');
-// const categoryRouter = require('./routes/category');
-// const taskRouter = require('./routes/task');
-
+const userRouter = require('./routes/crud/user');
+const categoryRouter = require('./routes/crud/category');
+const taskRouter = require('./routes/crud/task');
 
 
 const app = express();
@@ -43,9 +42,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 
-// app.use('/users', useruter);
-// app.use('/task', taskRouter);
-// app.use('/category', categoryRouter);
+app.use('/users', userRouter);
+app.use('/task', taskRouter);
+app.use('/category', categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

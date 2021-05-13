@@ -10,13 +10,15 @@ router.get('/', async (req, res) => {
 })
 
 // get task by name
-router.get('/:title', async (req, res) => {
-    return res.json(await Task.find({title:req.params.title}))
-})
+// router.get('/title', async (req, res) => {
+//     return res.json(await Task.find({title:req.params.title}))
+// })
 
-// get all tasks from selected category
-router.get('/:category_id', async (req, res) => {
-    return res.json(await Task.find({category_id:req.params.category_id}))
+
+
+
+router.post('/task_signup',  auth.authMiddleWare, auth.checkVolunteer, async (req, res) => {
+    return res.json(await Task.updateOne({_id:req.params._id}, {volunteer_id:req.user.volunteer_id}))
 })
 
 // router.post('/:_id', async (req, res) => {
@@ -28,13 +30,15 @@ router.post('/create', auth.authMiddleWare, auth.checkPensioner , async function
     console.log(req.body)
 
 
-    const task = new Tasks({
+    const task = new Task({
 
-        title: req.body.title,
-        description: req.body.description,
-        category_id: req.body.category_id,
-        time: req.body.time,
+        // title: req.body.title,
+        // description: req.body.description,
+        // category_id: req.body.category_id,
+        // time: req.body.time,
+        template_id: req.body.template_id,
         pensioner_id: req.user._id
+
 
 
     });
