@@ -57,6 +57,14 @@ router.post('/done/:_id', async (req, res) => {
 })
 
 
+
+//список завдань волонтера
+router.get('/volunteer/:_id', async (req, res) => {
+
+const doc = await Task.findOne({_id:req.params._id})
+if(doc.volunteer_id !== null)
+    return res.status(400).json({success:false, message:"Це завдання вже обрано іншим волонтером"})
+})
 //delete personal task??
 
 module.exports = router

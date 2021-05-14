@@ -25,6 +25,7 @@ const authRouter = require('./routes/authRouter');
 const userRouter = require('./routes/crud/user');
 const categoryRouter = require('./routes/crud/category');
 const taskRouter = require('./routes/crud/task');
+const taskTemplateRouter = require('./routes/crud/task-templates');
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/auth', authRouter);
 app.use('/users', userRouter);
 app.use('/task', taskRouter);
 app.use('/category', categoryRouter);
+app.use('/template', taskTemplateRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
