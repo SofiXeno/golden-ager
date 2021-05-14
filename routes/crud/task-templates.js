@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const TaskTemplates = require('../../models/category')
+const TaskTemplates = require('../../models/task-templates')
 
 
 router.get('/', async (req, res) => {
