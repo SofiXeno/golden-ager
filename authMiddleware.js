@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-function authMiddleWare(req, res, next) {
+function isAuthenticated(req, res, next) {
     if (req.method === "OPTIONS") {
         next()
     }
@@ -22,7 +22,7 @@ function authMiddleWare(req, res, next) {
     }
 }
 
-function roleMiddleWare(is_volunteer) {
+function checkRole(is_volunteer) {
     return function (req, res, next) {
         if (is_volunteer !== req.user.is_volunteer) {
             return res.status(403).json({message: "У вас немає доступу"})
@@ -31,5 +31,5 @@ function roleMiddleWare(is_volunteer) {
     }
 }
 module.exports = {
-    authMiddleWare, checkPensioner: roleMiddleWare(false), checkVolunteer: roleMiddleWare(true)
+    isAuthenticated, isPensioner: checkRole(false), isVolunteer: checkRole(true)
 }

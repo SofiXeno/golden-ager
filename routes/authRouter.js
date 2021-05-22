@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
 const saltRounds = 12;
 
-const middleWare = require("../middleWares")
+const middleWare = require("../authMiddleware")
 
 
 router.post("/registration", [
@@ -59,7 +59,7 @@ router.post("/login", [
 
     login)
 
-router.get("/users", middleWare.authMiddleWare, middleWare.checkVolunteer, getUsers)
+router.get("/users", middleWare.isAuthenticated, middleWare.isVolunteer, getUsers)
 
 module.exports = router
 
@@ -67,6 +67,7 @@ module.exports = router
 async function registration(req, res) {
     try {
         const errors = validationResult(req)
+        console.log(errors)
         if (!errors.isEmpty()) {
             return res.status(400).json({message: "Помилка при реєcтрації", errors})
         }
@@ -149,9 +150,9 @@ async function login(req, res) {
 }
 
 
-const generateAccessToken = (id, is_volunteer) => {
+const generateAccessToken = (_id, is_volunteer) => {
     const payload = {
-        id,
+        _id,
         is_volunteer
     }
 

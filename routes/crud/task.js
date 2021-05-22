@@ -1,4 +1,4 @@
-const auth = require("../../middleWares")
+const auth = require("../../authMiddleware")
 
 const router = require('express').Router()
 const Task = require('../../models/task')
@@ -9,61 +9,62 @@ router.get('/', async (req, res) => {
     return res.json(await Task.find())
 })
 
-// get task by name
-// router.get('/title', async (req, res) => {
-//     return res.json(await Task.find({title:req.params.title}))
-// })
-
-
-
-
-router.post('/task_signup',  auth.authMiddleWare, auth.checkVolunteer, async (req, res) => {
-    return res.json(await Task.updateOne({_id:req.params._id}, {volunteer_id:req.user.volunteer_id}))
+// :id -> task id
+router.post('/take/:_id', auth.isAuthenticated, auth.isVolunteer, async (req, res) => {
+    const updateResult = await Task.updateOne(
+        {
+            _id: req.params._id,
+            volunteer_id: null
+        }, {
+            volunteer_id: req.user._id
+        })
+    console.log(updateResult)
+    if (updateResult.nModified === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Це завдання вже було обрано іншим волонтером або видалено. Будь ласка, оновіть сторінку."
+        })
+    }
+    return res.json({success: true, message: "Завдання обрано успішно."})
 })
 
-// router.post('/:_id', async (req, res) => {
-//     return res.json(await Task.find({_id:req.params._id}))
-// })
-
 // create personal task
-router.post('/create', auth.authMiddleWare, auth.checkPensioner , async function(req, res) {
+router.post('/', auth.isAuthenticated, auth.isPensioner, async function (req, res) {
     console.log(req.body)
-
-
     const task = new Task({
-
-        // title: req.body.title,
-        // description: req.body.description,
-        // category_id: req.body.category_id,
-        // time: req.body.time,
         template_id: req.body.template_id,
         pensioner_id: req.user._id
-
-
-
     });
-    try{
+    try {
         await task.save();
-        return res.json({message:'Success'})
-    }catch (e){
+        return res.json({message: 'Success'})
+    } catch (e) {
         console.log(e);
-        res.json({message:e.message})
+        res.json({message: e.message})
     }
 })
 
-//task is done
-router.post('/done/:_id', async (req, res) => {
-    return res.json(await Task.updateOne({_id:req.params._id}, {task_is_done:true}))
+router.get('/completedTasks', auth.isAuthenticated, async (req, res) => {
+    const filter = {task_is_done: true}
+    if (req.user.is_volunteer) {
+        filter.volunteer_id = req.user._id
+    } else {
+        filter.pensioner_id = req.user._id
+    }
+    return res.json(await Task.find(filter))
 })
 
-
+//task is done
+router.post('/complete/:_id', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
+    return res.json(await Task.updateOne({_id: req.params._id}, {task_is_done: true}))
+})
 
 //список завдань волонтера
 router.get('/volunteer/:_id', async (req, res) => {
 
-const doc = await Task.findOne({_id:req.params._id})
-if(doc.volunteer_id !== null)
-    return res.status(400).json({success:false, message:"Це завдання вже обрано іншим волонтером"})
+    const doc = await Task.findOne({_id: req.params._id})
+    if (doc.volunteer_id !== null)
+        return res.status(400).json({success: false, message: "Це завдання вже обрано іншим волонтером"})
 })
 //delete personal task??
 

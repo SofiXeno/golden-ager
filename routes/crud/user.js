@@ -1,12 +1,12 @@
 
-const auth = require("../../middleWares")
+const auth = require("../../authMiddleware")
 
 const router = require('express').Router()
 const User = require('../../models/user')
 
-//знайти всіх юзерів +
-router.get('/', async (req, res) => {
-    return res.json(await User.find({is_volunteer:true, is_free:true}))
+//знайти вільних волонтерів
+router.get('/findFreeVolunteers', async (req, res) => {
+    return res.json(await User.find({ is_volunteer:true, is_free:true}))
 })
 
 //знайти юзера по ід +
@@ -15,26 +15,18 @@ router.get('/:_id', async (req, res) => {
 })
 
 
-//знайти вільних волонтерів
-router.get('/findFreeVolunteers', async (req, res) => {
-    return res.json(await User.find({ is_volunteer:true, is_free:true}))
-})
+
 
 
 // create user ??auth.checkPensioner
-router.post('/create', auth.authMiddleWare, auth.checkPensioner , async function(req, res) {
-    console.log(req.body)
-
-
+router.post('/create', auth.isAuthenticated, auth.isPensioner , async function(req, res) {
     const user = new User({
-
-        title: req.body.title,
-        description: req.body.description,
-        category_id: req.body.category_id,
-        time: req.body.time,
-        pensioner_id: req.user._id
-
-
+        phone: req.body.phone,
+        password : req.body.password,
+        first_name:req.body.first_name,
+        last_name:req.body.last_name,
+        birthday:req.body.birthday,
+        is_volunteer:req.body.is_volunteer
     });
     try{
         await user.save();
@@ -45,5 +37,18 @@ router.post('/create', auth.authMiddleWare, auth.checkPensioner , async function
     }
 })
 
+router.get("/current", auth.isAuthenticated, async (req, res) => {
+    return res.json(await User.findOne({_id: req.user._id}))
+})
+
+//волонтер виходить в онлайн
+router.post("/goOnline/:_id", auth.isAuthenticated, async (req, res) => {
+    return res.json(await User.updateOne({_id:req.params._id}, {is_free:true}))
+})
+
+//волонтер виходить в офлайн
+router.post("/goOffline/:_id", auth.isAuthenticated, async (req, res) => {
+    return res.json(await User.updateOne({_id:req.params._id}, {is_free:false}))
+})
 
 module.exports = router

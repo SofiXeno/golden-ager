@@ -15,17 +15,17 @@ const userSchema = new mongoose.Schema({
 
 });
 
-// userSchema.pre('save', function () {
-//     if (this.is_volunteer) {
-//         this.is_free = true
-//         if (!this.organization) {
-//             throw new Error(`No organization defined for volunteer ${this.first_name} ${this.last_name}`)
-//         }
-//     } else {
-//         this.is_free = null
-//         this.organization = null
-//     }
-// });
+userSchema.pre('save', function () {
+    if (this.is_volunteer) {
+        this.is_free = true
+        if (!this.organization) {
+            throw new Error(`No organization defined for volunteer ${this.first_name} ${this.last_name}`)
+        }
+    } else {
+        this.is_free = null
+        this.organization = null
+    }
+});
 
 const User = mongoose.model('users', userSchema);
 

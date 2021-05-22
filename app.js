@@ -1,5 +1,3 @@
-const User = require('./models/user')
-
 require('dotenv').config();
 
 const createError = require('http-errors');
@@ -11,11 +9,13 @@ const logger = require('morgan');
 
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.DB_URL,{
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+mongoose.connect(process.env.DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
 
-}).then(()=>{console.log("Successfully connected to DB")}).catch (console.error);
+}).then(() => {
+    console.log("Successfully connected to DB")
+}).catch(console.error);
 
 
 const indexRouter = require('./routes/index');
@@ -36,7 +36,7 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -49,19 +49,19 @@ app.use('/category', categoryRouter);
 app.use('/template', taskTemplateRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.use(function (req, res, next) {
+    next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+app.use(function (err, req, res, next) {
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 // const doc = {
