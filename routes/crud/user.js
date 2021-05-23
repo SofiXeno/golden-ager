@@ -9,6 +9,12 @@ router.get('/findFreeVolunteers', async (req, res) => {
     return res.json(await User.find({ is_volunteer:true, is_free:true}))
 })
 
+
+router.get("/current", auth.isAuthenticated, async (req, res) => {
+    return res.json(await User.findOne({_id: req.user._id}))
+})
+
+
 //знайти юзера по ід +
 router.get('/:_id', async (req, res) => {
     return res.json(await User.find({_id:req.params._id}))
@@ -37,9 +43,7 @@ router.post('/create', auth.isAuthenticated, auth.isPensioner , async function(r
     }
 })
 
-router.get("/current", auth.isAuthenticated, async (req, res) => {
-    return res.json(await User.findOne({_id: req.user._id}))
-})
+
 
 //волонтер виходить в онлайн
 router.post("/goOnline/:_id", auth.isAuthenticated, async (req, res) => {
