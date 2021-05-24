@@ -11,6 +11,10 @@ router.get('/getByCategory/:category_id', async (req, res) => {
     return res.json(await TaskTemplates.find({category_id:req.params.category_id}))
 })
 
+router.get('/:_id', async (req, res) => {
+    return res.json(await TaskTemplates.findOne())
+})
+
 
 
 
