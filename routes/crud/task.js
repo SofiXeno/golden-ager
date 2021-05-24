@@ -114,7 +114,7 @@ router.post('/complete/', auth.isAuthenticated, auth.isPensioner, async (req, re
     if (!task) {
         return res.status(404).json({message: "Завдання не існує."})
     }
-    await Task.updateOne({_id: req.params._id}, {task_is_done: true})
+    await Task.updateOne({_id:task._id}, {task_is_done: true})
     await User.updateOne({_id: task.volunteer_id}, {is_free: true})
     return res.json({success: true, message: "Завдання виконано."})
 
