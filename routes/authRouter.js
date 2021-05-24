@@ -125,20 +125,24 @@ async function registration(req, res) {
 async function login(req, res) {
 
     try {
-
         const {
             phone,
             password,
+            is_volunteer
         } = req.body
 
         const user = await User.findOne({phone})
         if (!user) {
-            return res.status(400).json({message: `Користувача з номером телефону ${phone} не знайдено`})
+            return res.status(400).json({message: "Користувача з номером телефону ${phone} не знайдено"})
+        }
+
+        if(user.is_volunteer !== is_volunteer) {
+            return res.status(400).json({message: "Ви спробували увійти в акаунт, що не відповідає Вашій ролі."})
         }
 
         const validPassword = bcrypt.compareSync(password, user.password)
         if (!validPassword) {
-            return res.status(400).json({message: `Невірний пароль`})
+            return res.status(400).json({message: "Невірний пароль"})
         }
         const token = generateAccessToken(user._id, user.is_volunteer)
         return res.json({token})

@@ -32,7 +32,7 @@ router.post('/take/:_id', auth.isAuthenticated, auth.isVolunteer, async (req, re
             message: "Це завдання вже було обрано іншим волонтером або видалено. Будь ласка, оновіть сторінку."
         })
     }
-    await User.updateOne({_id: req.params._id}, {is_free: false})
+    await User.updateOne({_id: req.user._id}, {is_free: false})
     return res.json({success: true, message: "Завдання обрано успішно."})
 })
 
@@ -45,6 +45,7 @@ router.get('/availableTasks', auth.isAuthenticated, auth.isVolunteer, async (req
 })
 
 //create personal task
+//create personal task
 router.post('/create', auth.isAuthenticated, auth.isPensioner, async function (req, res) {
     console.log(req.body)
     const task = new Task({
@@ -56,7 +57,10 @@ router.post('/create', auth.isAuthenticated, auth.isPensioner, async function (r
         return res.json({message: 'Завдання створено успішно'})
     } catch (e) {
         console.log(e);
-        res.json({message: e.message})
+        if(e.code === 11000) {
+            return res.status(400).json({message: 'Ви вже створили завдання.'})
+        }
+        return res.status(400).json({message: e.message})
     }
 })
 
@@ -105,17 +109,14 @@ router.get('/currentVolunteer', auth.isAuthenticated, auth.isPensioner, async (r
     return res.json({volunteer: volunteer})
 })
 //task is done
-router.post('/complete/:_id', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
-    const task = await Task.findOne({_id: req.params._id, volunteer_id: {"$ne": null}})
+router.post('/complete/', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
+    const task = await Task.findOne({pensioner_id: req.user._id})
     if (!task) {
         return res.status(404).json({message: "Завдання не існує."})
     }
-    if (task.pensioner_id !== req.user.pensioner_id) {
-        return res.status(403).json({message: "Операцію заборонено."})
-    }
     await Task.updateOne({_id: req.params._id}, {task_is_done: true})
     await User.updateOne({_id: task.volunteer_id}, {is_free: true})
-    return res.json({success: true, message: "Завданняв виконано."})
+    return res.json({success: true, message: "Завдання виконано."})
 
 })
 
