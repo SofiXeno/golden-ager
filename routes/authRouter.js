@@ -133,7 +133,7 @@ async function login(req, res) {
 
         const user = await User.findOne({phone})
         if (!user) {
-            return res.status(400).json({message: "Користувача з номером телефону ${phone} не знайдено"})
+            return res.status(400).json({message: `Користувача з номером телефону ${phone} не знайдено`})
         }
 
         if(user.is_volunteer !== is_volunteer) {

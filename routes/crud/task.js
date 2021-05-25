@@ -44,10 +44,20 @@ router.get('/availableTasks', auth.isAuthenticated, auth.isVolunteer, async (req
     return res.json(doc)
 })
 
-//create personal task
+
 //create personal task
 router.post('/create', auth.isAuthenticated, auth.isPensioner, async function (req, res) {
     console.log(req.body)
+
+    //найти задание с нашим пенсером
+    const a = await Task.findOne({
+        task_is_done:false,
+        pensioner_id: req.user._id
+    })
+    if (a) {
+        return res.status(400).json({success: false, message: 'Ви вже створили завдання.'})
+    }
+
     const task = new Task({
         template_id: req.body.template_id,
         pensioner_id: req.user._id
@@ -101,7 +111,7 @@ router.get('/currentTask', auth.isAuthenticated, async (req, res) => {
 })
 
 router.get('/currentVolunteer', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
-    const task = await Task.findOne({pensioner_id: req.user._id})
+    const task = await Task.findOne({pensioner_id: req.user._id, task_is_done:false})
     if (!task) {
         return res.status(404).json({message: "Завдання немає."})
     }
@@ -109,8 +119,8 @@ router.get('/currentVolunteer', auth.isAuthenticated, auth.isPensioner, async (r
     return res.json({volunteer: volunteer})
 })
 //task is done
-router.post('/complete/', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
-    const task = await Task.findOne({pensioner_id: req.user._id})
+router.post('/complete', auth.isAuthenticated, auth.isPensioner, async (req, res) => {
+    const task = await Task.findOne({pensioner_id: req.user._id, task_is_done:false})
     if (!task) {
         return res.status(404).json({message: "Завдання не існує."})
     }
